@@ -1,5 +1,5 @@
 var curNum = 0;
-var stopped = true;
+var worker;
 function ready(fn) {
   if (document.readyState != "loading") {
     fn();
@@ -25,40 +25,25 @@ function onStart() {
   btnStart.innerText = `Now Stop me If you can 😈`;
   btnStart.removeEventListener("click", onStart);
   btnStart.addEventListener("click", onStop);
-  stopped = false;
-  getNextFib();
+  worker = new Worker("worker.js");
+  worker.onmessage = onMessage;
+  worker.postMessage("whatever!");
 }
 function onStop() {
   btnStart.innerText = `Generate some Fibo!🤡`;
   btnStart.removeEventListener("click", onStop);
   btnStart.addEventListener("click", onStart);
-  stopped = true;
+  worker.terminate();
 }
 
-function getNextFib() {
-  if (stopped) {
-    return;
-  }
-  var curFib = fib(curNum);
-  renderResult(curFib);
-  curNum++;
-  setTimeout(() => {
-    getNextFib();
-  }, 100);
+function onMessage({ data }) {
+  renderResult(data);
 }
-
-function fib(n) {
-  if (n < 2) {
-    return n;
-  }
-  return fib(n - 1) + fib(n - 2);
-}
-
 function renderResult(number) {
   const container = document.getElementById("results-container");
   const result = document.createElement("span");
-  const last = container.getElementsByClassName("result");
+  const lastElement = container.getElementsByClassName("result");
   result.className = "result";
   result.innerText = number;
-  container.insertBefore(result, last[0]);
+  container.insertBefore(result, lastElement[0]);
 }
