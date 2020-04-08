@@ -1,4 +1,5 @@
 var curNum = 0;
+var stopped = true;
 function ready(fn) {
   if (document.readyState != "loading") {
     fn();
@@ -14,22 +15,36 @@ function ready(fn) {
 
 ready(init);
 
+var btnStart;
 function init() {
-  const btnStart = document.getElementById("btn-start");
+  btnStart = document.getElementById("btn-start");
   btnStart.addEventListener("click", onStart);
 }
 
 function onStart() {
+  btnStart.innerText = `Now Stop me If you can 😈`;
+  btnStart.removeEventListener("click", onStart);
+  btnStart.addEventListener("click", onStop);
+  stopped = false;
   getNextFib();
+}
+function onStop() {
+  btnStart.innerText = `Generate some Fibo!🤡`;
+  btnStart.removeEventListener("click", onStop);
+  btnStart.addEventListener("click", onStart);
+  stopped = true;
 }
 
 function getNextFib() {
+  if (stopped) {
+    return;
+  }
   var curFib = fib(curNum);
   renderResult(curFib);
   curNum++;
   setTimeout(() => {
     getNextFib();
-  }, 200);
+  }, 100);
 }
 
 function fib(n) {
@@ -42,7 +57,8 @@ function fib(n) {
 function renderResult(number) {
   const container = document.getElementById("results-container");
   const result = document.createElement("span");
+  const last = container.getElementsByClassName("result");
   result.className = "result";
   result.innerText = number;
-  container.appendChild(result);
+  container.insertBefore(result, last[0]);
 }
